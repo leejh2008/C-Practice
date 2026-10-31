@@ -2,6 +2,7 @@
 setlocal EnableDelayedExpansion
 "%SystemRoot%\System32\chcp.com" 936 >nul
 set "PATH=%SystemRoot%\System32;%SystemRoot%;%PATH%"
+set "PATH=%SystemRoot%\System32\WindowsPowerShell\v1.0;%PATH%"
 if exist "%ProgramFiles%\Git\cmd" set "PATH=%ProgramFiles%\Git\cmd;%PATH%"
 cd /d "%~dp0"
 title 一键同步到 GitHub - C-Practice
