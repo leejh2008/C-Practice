@@ -22,21 +22,33 @@ Node *creatNode(int data) {
 }
 
 //尾插
+//要拿到头结点的地址才能找到并修改真正的结点
+//头结点不会变，所以不需要返回值，用void
+//len：链表长度的地址（因为要修改它）
 void add(Node *head, int data, int *len) {
+	//调用函数创建新结点
 	Node*node = creatNode(data);
+	//定义curr指针用来移动（手指）
 	Node*curr = head;
+	//找到最后一个结点，它的next是NULL
+	//curr->next != NULL：停在最后一个结点上
 	while (curr->next != NULL) {
+		//手指往后移一格
 		curr = curr->next;
 	}
+	//让最后一个结点的next指向新结点，新结点就接到了链表的末尾
 	curr->next = node;
+	//链表多了一个结点，长度len就+1
 	(*len)++;
 }
 
 //头插,Node *addHead声明函数返回类型addHead是一个返回结点地址的函数
 Node *addHead(Node *head, int data, int *len) {
 	Node*node = creatNode(data);
+	//新创建的结点变更为头结点
 	node->next = head;
 	(*len)++;
+	//把新的头结点的地址交给调用方，让main里的head更新成这个新结点
 	return node;
 }
 
@@ -45,7 +57,7 @@ Node *insert(Node *head, int index, int data, int *len) {
 	//判断下表是否越界
 	if (index < 0 || index > (*len)) {
 		printf("index超出链表长度，插入失败\n");
-		return NULL;
+		return head;
 	}
 	//利用函数创建结点
 	Node *node = creatNode(data);
@@ -63,6 +75,8 @@ Node *insert(Node *head, int index, int data, int *len) {
 	for (int i = 0; i < index - 1; i++) {
 		curr = curr->next;
 	}
+	//将新结点挤进链表中间：先让新节点接上后半段，再让前半段接上新结点
+	//（注意两行的顺序不可以调换）
 	node->next = curr->next;
 	curr->next = node;
 	//长度+1
@@ -73,59 +87,87 @@ Node *insert(Node *head, int index, int data, int *len) {
 //删除指定位置的数据
 Node *removeAt(Node *head, int index, int *len) {
 	if (head == NULL || index < 0 || index > (*len)) {
-		printf("index超出链表长度，插入失败\n");
+		printf("index超出链表长度，删除失败\n");
 		return head;
 	}
+	//如果要删除头结点
 	if (index == 0) {
+		//记住第二个结点的地址
 		Node*next = head->next;
+		//释放头结点
 		free(head);
 		(*len)--;
+		//第二个结点成为新的头结点
 		return next;
 	}
 	Node *pre = head;
+	//遍历到下标-1位置处
 	for (int i = 0; i < index - 1; i++) {
+		//手指向后移一格
 		pre = pre->next;
 	}
+	//当前指向的下一个结点为要删除的结点
 	Node*del = pre->next;
+	//要删除位置的下一个结点保存到当前的下一个结点
 	pre->next = del->next;
+	//释放要删除的结点
 	free(del);
 	(*len)--;
 	return head;
 }
 
 //删除指定数据
+//头结点可能被删，会让head换人，所以返回Node*
 Node *removes(Node *head, int data, int *len) {
+	//pre是前驱指针，头结点没有前驱，所以一开始是NULL
 	Node*pre = NULL;
+	//curr是当前指针，用来逐个检查结点，从头结点开始
 	Node*curr = head;
+	//curr走到NULL说明整条链表遍历完成
 	while (curr != NULL) {
+		//找到了要检查的数据
 		if (curr->data == data) {
+			//被删的是头结点
 			if (pre == NULL) {
+				//让head指向第二个结点
 				head = curr->next;
 			} else {
+				//前驱绕过curr直接指向curr的下一个结点
 				pre->next = curr->next;
 			}
+			//释放curr
 			free(curr);
 			(*len)--;
 			return head;
 		}
+		//没找到，pre先指向当前结点
 		pre = curr;
+		//curr再后移到下一个结点
 		curr = curr->next;
 	}
 	printf("没有找到数据 %d,删除失败\n", data);
 	return head;
 }
 
+//删除所有相同的结点
 Node *removeAll(Node *head, int data, int *len) {
 	Node*pre = NULL;
 	Node*curr = head;
+	//统计相同结点的个数
 	int count = 0;
 	while (curr != NULL) {
+		//当前结点是要删除的数据
 		if (curr->data == data) {
+			//用del记住要删的结点，因为马上要移动curr
 			Node*del = curr;
+			//curr先移动到下一个结点
 			curr = curr->next;
-			if (curr = NULL) {
+			//删除的是下一个结点
+			if (pre == NULL) {
+				//head直接指向下一个
 				head = curr;
 			} else {
+				//前驱直接绕过del，指向curr
 				pre->next = curr;
 			}
 			free(del);
@@ -133,11 +175,13 @@ Node *removeAll(Node *head, int data, int *len) {
 			count++;
 		} else {
 			pre = curr;
+			//curr后移到下一个结点
 			curr = curr->next;
 		}
 	}
+	//一个都没删，说明链表里面没有这个数据
 	if (count == 0) {
-		printf("没有找到%d，删除失败", data);
+		printf("没有找到%d，删除失败\n", data);
 	}
 	return head;
 }
@@ -176,7 +220,7 @@ void find(Node *head, int data) {
 //修改数据
 void change(Node *head, int index, int newData, int len) {
 	if (index < 0 || index >= len) {
-		printf("下标超出范围，查询失败\n");
+		printf("下标超出范围，修改失败\n");
 		return;
 	}
 	Node*curr = head;
@@ -199,7 +243,7 @@ void printNode(Node *head) {
 int main() {
 	int index = 2;
 	int data = 25;
-	int len = 4;
+	int len = 1;
 	//定义一个头结点，赋值为10
 	Node*head = creatNode(10);
 	//调用add尾插函数
@@ -207,16 +251,28 @@ int main() {
 	add(head, 30, &len);
 	add(head, 40, &len);
 	add(head, 40, &len);
+
 	//头插
 	head = addHead(head, 5, &len);
+
 	//insert函数把新的head用返回值交了回来，再用head=...接收，head不用取值符
 	head = insert(head, index, data, &len);
-	//删除指定位置
+	//删除指定位置的数据
+	head = removeAt(head, 3, &len);
+
+	//删除指定的数据
 	head = removes(head, 30, &len);
+
+	//删除所有相同的数据
 	head = removeAll(head, 40, &len);
-	findNode(head, 3, len);
-	find(head, 25);
+
+
+
 	change(head, 2, 99, len);
+	//按下标查询数据
+	findNode(head, 2, len);
+	find(head, 99);
+
 	//遍历结点
 	printNode(head);
 	return 0;
